@@ -1,0 +1,25 @@
+{
+  "name": "parse-emoji-ingestor",
+  "version": "1.0.0",
+  "description": "Ingestor to Parse",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kennethklee/parse-emoji-ingestor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kennethklee/parse-emoji-ingestor/issues"
+  },
+  "homepage": "https://github.com/kennethklee/parse-emoji-ingestor",
+  "dependencies": {
+    "async": "^0.9.0",
+    "github-download": "^0.3.0",
+    "jsdom": "^1.0.0-pre.3",
+    "parse": "^1.2.19",
+    "rmrf": "^1.0.2"
+  }
+}
