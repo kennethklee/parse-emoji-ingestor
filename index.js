@@ -12,6 +12,9 @@ Parse.Cloud.useMasterKey();
 var Emoji = Parse.Object.extend('Emoji');
 
 var getPhantomEmojiFiles = function(done) {
+  if (fs.existsSync('./phantom')) {
+    cleanUp();
+  }
   console.log('downloading phantom emoji images...');
   ghdownload('https://github.com/Genshin/PhantomOpenEmoji', './phantom').on('end', function() {
     if (done) {
@@ -46,6 +49,12 @@ var getEmojiDictionary = function(done) {
   });
 };
 
+var cleanUp = function() {
+  console.log('cleaning up...');
+  rmrf('./phantom');
+  console.log('cleaned!');
+}
+
 async.parallel([
   getEmojiDictionary,
   getPhantomEmojiFiles
@@ -60,20 +69,20 @@ async.parallel([
       file.save().then(function() {
         var record = new Emoji();
         emoji.phantom = file;
-        record.save(emoji);
-        
-        next();
+        record.save(emoji).then(function() {
+          next();
+        });
       });
+    } else {
+      console.log('skipped ' + emoji.shortName);
+      next()
     }
   };
   
   // Insert into parse
   console.log('saving to parse...');
-  async.map(emojiList, saveToParse, function(err) {
+  async.each(emojiList, saveToParse, function(err) {
     console.log('saved!');
-    // Clean up
-    console.log('cleaning up...');
-    rmrf('./phantom');
-    console.log('cleaned!');
+    cleanUp();
   });
 });

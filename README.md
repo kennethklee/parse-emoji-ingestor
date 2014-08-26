@@ -9,3 +9,10 @@ Uses the following environment variables:
 `MASTER_KEY`
 
 They are self explanatory.
+
+running
+-------
+```bash
+npm install
+APP_ID=xxxxx MASTER_KEY=xxxxx npm start
+```
