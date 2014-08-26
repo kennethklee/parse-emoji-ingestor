@@ -6,19 +6,23 @@ var Parse = require('parse').Parse,
     rmrf = require('rmrf');
 
 
-Parse.initialize(process.env.APP_ID, process.env.JAVASCRIPT_KEY, process.env.MASTER_KEY);
+Parse.initialize(process.env.APP_ID, null, process.env.MASTER_KEY);
+Parse.Cloud.useMasterKey();
 
 var Emoji = Parse.Object.extend('Emoji');
 
 var getPhantomEmojiFiles = function(done) {
+  console.log('downloading phantom emoji images...');
   ghdownload('https://github.com/Genshin/PhantomOpenEmoji', './phantom').on('end', function() {
     if (done) {
+      console.log('downloaded!');
       done();
     }
   });
 };
 
 var getEmojiDictionary = function(done) {
+  console.log('retrieving emoji unicode dictionary...');
   jsdom.env('http://apps.timwhitlock.info/emoji/tables/unicode', ['http://code.jquery.com/jquery.js'], function(err, window) {
     var $ = window.$,
         results = [];
@@ -32,11 +36,11 @@ var getEmojiDictionary = function(done) {
           text: $('.name', this).text().toLowerCase()
         };
         results.push(emoji);
-        console.log(emoji);
       }
     });
 
     if (done) {
+      console.log('retrieved!');
       done(null, results)
     }
   });
@@ -51,30 +55,25 @@ async.parallel([
     var svgPath = './phantom/emoji/' + emoji.shortName + '.svg';
     if (fs.existsSync(svgPath)) {
       var svg = new Buffer(fs.readFileSync(svgPath)),
-          file = new Parse.File(svg);
+        file = new Parse.File(emoji.shortName + '.svg', {base64: svg.toString('base64')}, 'image/svg+xml');
       
-      emoji.phantom = file;
-      
-      var record = new Emoji();
-      record.save(emoji);
+      file.save().then(function() {
+        var record = new Emoji();
+        emoji.phantom = file;
+        record.save(emoji);
+        
+        next();
+      });
     }
   };
   
   // Insert into parse
+  console.log('saving to parse...');
   async.map(emojiList, saveToParse, function(err) {
-      // Clean up
-      rmrf('./phantom');
+    console.log('saved!');
+    // Clean up
+    console.log('cleaning up...');
+    rmrf('./phantom');
+    console.log('cleaned!');
   });
-})
-
-
-
-/*
-// Quick parse test
-
-    query = new Parse.Query(Emoji);
-
-query.find(function(response) {
-  console.log(response);
 });
-*/
