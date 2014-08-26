@@ -2,6 +2,7 @@ var Parse = require('parse').Parse,
     async = require('async'),
     ghdownload = require('github-download'),
     jsdom = require('jsdom'),
+    fs = require('fs'),
     rmrf = require('rmrf');
 
 
@@ -46,12 +47,24 @@ async.parallel([
   getPhantomEmojiFiles
 ], function(err, results) {
   var emojiList = results[0];
+  var saveToParse = function(emoji, next) {
+    var svgPath = './phantom/emoji/' + emoji.shortName + '.svg';
+    if (fs.existsSync(svgPath)) {
+      var svg = new Buffer(fs.readFileSync(svgPath)),
+          file = new Parse.File(svg);
+      
+      emoji.phantom = file;
+      
+      var record = new Emoji();
+      record.save(emoji);
+    }
+  };
   
   // Insert into parse
-  
-  
-  // Clean up
-  rmrf('./phantom');
+  async.map(emojiList, saveToParse, function(err) {
+      // Clean up
+      rmrf('./phantom');
+  });
 })
 
 
