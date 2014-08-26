@@ -74,7 +74,7 @@ async.parallel([
         });
       });
     } else {
-      console.log('skipped ' + emoji.shortName);
+      console.log('skipped ' + emoji.shortName + ' (probably an animation)');
       next()
     }
   };
